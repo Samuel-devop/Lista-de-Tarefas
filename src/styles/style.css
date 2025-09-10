@@ -280,8 +280,10 @@ button[type="submit"]:hover {
     border: 1.5px solid #b71c1c;
 }
 
-.edit-btn {
-.save-btn, .cancel-edit-btn {
+
+.edit-btn,
+.save-btn,
+.cancel-edit-btn {
     background: #fff;
     color: #b71c1c;
     border: 1.5px solid #b71c1c;
@@ -293,21 +295,13 @@ button[type="submit"]:hover {
     box-shadow: 0 2px 6px rgba(183,28,28,0.07);
     transition: background 0.3s, box-shadow 0.3s, color 0.3s, border 0.3s;
 }
-    background: #fff;
-    color: #b71c1c;
-    border: 1.5px solid #b71c1c;
-}
+
 
 
 .complete-btn:hover,
-.edit-btn:hover {
-    
+.edit-btn:hover,
 .save-btn:hover,
 .cancel-edit-btn:hover {
-    background: #b71c1c;
-    color: #fff;
-    transform: scale(1.05);
-}
     background: #b71c1c;
     color: #fff;
     transform: scale(1.05);
