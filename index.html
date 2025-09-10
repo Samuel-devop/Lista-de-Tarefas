@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="src/styles/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <title>Lista de Tarefas</title>
+</head>
+
+<body>
+    <div id="to_do">
+        <h1>Lista de Tarefas</h1>
+
+        <button id="toggleForm"><i class="fas fa-plus"></i> Adicionar Nova Tarefa</button>
+
+        <form id="expandedForm" class="to-do-form" style="display: none;">
+            <div class="form-group">
+                <label for="taskName">Nome da Tarefa</label>
+                <input type="text" id="taskName" name="taskName" placeholder="Digite sua tarefa aqui" required>
+            </div>
+
+            <div class="form-group">
+                <label for="taskPrice">Preço (R$)</label>
+                <input type="number" id="taskPrice" name="taskPrice" placeholder="0,00" step="0.01" min="0">
+            </div>
+
+            <div class="form-group">
+                <label for="taskDate">Data</label>
+                <input type="date" id="taskDate" name="taskDate" required>
+            </div>
+
+            <button type="submit"><i class="fas fa-plus-circle"></i> Adicionar Tarefa</button>
+        </form>
+
+        <div id="tasksContainer"></div>
+    </div>
+
+    <!-- Adicionar jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="src/javascript/script.js"></script>
+</body>
+
+</html>
