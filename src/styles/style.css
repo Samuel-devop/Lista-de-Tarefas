@@ -251,15 +251,15 @@ button[type="submit"]:hover {
     gap: 12px;
 }
 
-.delete-btn, .complete-btn {
+
+.delete-btn, .complete-btn, .edit-btn {
     padding: 7px 16px;
-    border: none;
     border-radius: 6px;
     cursor: pointer;
     font-size: 15px;
-    transition: background 0.3s, box-shadow 0.3s;
     font-weight: 500;
     box-shadow: 0 2px 6px rgba(183,28,28,0.07);
+    transition: background 0.3s, box-shadow 0.3s, color 0.3s, border 0.3s;
 }
 
 .delete-btn {
@@ -273,29 +273,91 @@ button[type="submit"]:hover {
     transform: scale(1.05);
 }
 
+
 .complete-btn {
     background: #fff;
     color: #b71c1c;
     border: 1.5px solid #b71c1c;
 }
 
-.complete-btn:hover {
+.edit-btn {
+.save-btn, .cancel-edit-btn {
+    background: #fff;
+    color: #b71c1c;
+    border: 1.5px solid #b71c1c;
+    padding: 7px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    box-shadow: 0 2px 6px rgba(183,28,28,0.07);
+    transition: background 0.3s, box-shadow 0.3s, color 0.3s, border 0.3s;
+}
+    background: #fff;
+    color: #b71c1c;
+    border: 1.5px solid #b71c1c;
+}
+
+
+.complete-btn:hover,
+.edit-btn:hover {
+    
+.save-btn:hover,
+.cancel-edit-btn:hover {
+    background: #b71c1c;
+    color: #fff;
+    transform: scale(1.05);
+}
     background: #b71c1c;
     color: #fff;
     transform: scale(1.05);
 }
 
+
 .completed {
-    opacity: 0.7;
-    border-left-color: #d32f2f;
-    background: linear-gradient(90deg, #f6f6f6 60%, #ffeaea 100%);
-    box-shadow: 0 0 0 2px #d32f2f33;
+    opacity: 1;
+    border-left: 6px solid #43a047;
+    background: linear-gradient(90deg, #e0f7fa 60%, #c8e6c9 100%);
+    box-shadow: 0 4px 24px 0 #43a04733, 0 0 0 2px #43a04722;
     position: relative;
+    animation: completedGlow 1.8s infinite alternate;
+    transition: background 0.4s, box-shadow 0.4s;
+}
+
+@keyframes completedGlow {
+    from { box-shadow: 0 4px 24px 0 #43a04733, 0 0 0 2px #43a04722; }
+    to { box-shadow: 0 8px 32px 0 #43a04766, 0 0 0 4px #43a04744; }
 }
 
 .completed h3 {
     text-decoration: line-through;
-    color: #d32f2f;
+    color: #388e3c;
+    font-weight: 700;
+    text-shadow: 0 2px 8px #43a04722;
+    padding-left: 28px;
+    position: relative;
+}
+
+.completed h3::before {
+    content: '\2714'; /* checkmark */
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 7px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    box-shadow: 0 2px 6px rgba(183,28,28,0.07);
+    transition: background 0.3s, box-shadow 0.3s, color 0.3s, border 0.3s;
+    border: 1.5px solid #b71c1c;
+    background: #fff;
+    color: #b71c1c;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: 0.5px;
 }
 
 .completed::after {
@@ -303,14 +365,17 @@ button[type="submit"]:hover {
     position: absolute;
     top: 16px;
     right: 18px;
-    background: #d32f2f;
+    background: linear-gradient(90deg, #43a047 60%, #388e3c 100%);
     color: #fff;
-    font-size: 0.85rem;
-    font-weight: 600;
-    padding: 3px 12px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px #d32f2f22;
-    letter-spacing: 0.5px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 5px 16px;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px #43a04744;
+    letter-spacing: 1px;
+    border: 2px solid #fff;
+    text-shadow: 0 2px 8px #388e3c44;
+    z-index: 3;
 }
 
 .empty-state {
