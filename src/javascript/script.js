@@ -84,6 +84,20 @@ $(document).ready(function() {
     if (arguments.length > 5 && arguments[5]) taskItem.addClass('completed');
         taskItem.html(`
             <div class="task-main-row" style="display:flex; align-items:flex-start; gap:12px;">
+                <div class="drag-handle-wrapper" style="display:flex; align-items:center;">
+                    <button class="drag-handle" title="Arrastar" aria-label="Arrastar tarefa" type="button">
+                        <span class="dot-col">
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                        </span>
+                        <span class="dot-col">
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                        </span>
+                    </button>
+                </div>
                 <div style="flex:1; position:relative;">
                     <h3>${taskName}</h3>
                     <div class="task-details-col" style="display:flex; flex-direction:column; align-items:flex-start; gap:8px;">
@@ -136,6 +150,126 @@ $(document).ready(function() {
             });
         });
     }
+
+    // --- Drag & drop swapping with animation ---
+    let dragSrcEl = null;
+
+    // Helper: animate swap between two jQuery elements, returns a Promise
+    function animateSwap($a, $b) {
+        return new Promise((resolve) => {
+            const rectA = $a[0].getBoundingClientRect();
+            const rectB = $b[0].getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+
+            // Clone nodes for animation
+            const $cloneA = $a.clone();
+            const $cloneB = $b.clone();
+
+            // Style clones
+            $cloneA.css({ position: 'absolute', top: rectA.top + scrollTop, left: rectA.left + scrollLeft, width: rectA.width, margin: 0, zIndex: 9999 });
+            $cloneB.css({ position: 'absolute', top: rectB.top + scrollTop, left: rectB.left + scrollLeft, width: rectB.width, margin: 0, zIndex: 9999 });
+
+            $('body').append($cloneA).append($cloneB);
+
+            // Hide originals while animating
+            $a.css('visibility', 'hidden');
+            $b.css('visibility', 'hidden');
+
+            const dur = 280;
+            // Animate clones to each other's positions
+            $cloneA.animate({ top: rectB.top + scrollTop, left: rectB.left + scrollLeft }, dur);
+            $cloneB.animate({ top: rectA.top + scrollTop, left: rectA.left + scrollLeft }, dur, function() {
+                // After animation complete: swap DOM elements
+                const $aNext = $a.next();
+                const $bNext = $b.next();
+                // If nodes are adjacent, handle accordingly
+                if ($aNext && $aNext[0] === $b[0]) {
+                    $b.insertBefore($a);
+                } else if ($bNext && $bNext[0] === $a[0]) {
+                    $a.insertBefore($b);
+                } else {
+                    const aParent = $a.parent();
+                    const bParent = $b.parent();
+                    const aIndex = $a.index();
+                    const bIndex = $b.index();
+                    if (aIndex < bIndex) {
+                        $b.insertAfter($a);
+                    } else {
+                        $a.insertAfter($b);
+                    }
+                }
+
+                // Clean up
+                $cloneA.remove();
+                $cloneB.remove();
+                $a.css('visibility', '');
+                $b.css('visibility', '');
+
+                resolve();
+            });
+        });
+    }
+
+    // Drag handlers (delegated)
+    $('#tasksContainer').on('dragstart', '.task-item', function(e) {
+        dragSrcEl = $(this);
+        e.originalEvent.dataTransfer.effectAllowed = 'move';
+        try { e.originalEvent.dataTransfer.setData('text/plain', $(this).data('id')); } catch (err) {}
+        $(this).addClass('dragging');
+    });
+
+    $('#tasksContainer').on('dragend', '.task-item', function() {
+        $(this).removeClass('dragging');
+        dragSrcEl = null;
+        $('.task-item').removeClass('drag-over');
+    });
+
+    // Enable dragging only when handle is pressed
+    $('#tasksContainer').on('mousedown touchstart', '.drag-handle', function(e) {
+        const $item = $(this).closest('.task-item');
+        $item.attr('draggable', 'true');
+        // For touch, initiate a synthetic drag by setting dataTransfer is not possible, but we'll rely on touch events in modern browsers
+    });
+    $(document).on('mouseup touchend touchcancel', function(e) {
+        $('.task-item[draggable="true"]').attr('draggable', 'false');
+    });
+
+    $('#tasksContainer').on('dragover', '.task-item', function(e) {
+        e.preventDefault();
+        $(this).addClass('drag-over');
+    });
+    $('#tasksContainer').on('dragleave', '.task-item', function() { $(this).removeClass('drag-over'); });
+
+    $('#tasksContainer').on('drop', '.task-item', function(e) {
+        e.preventDefault();
+        const $target = $(this);
+        $target.removeClass('drag-over');
+        if (!dragSrcEl || dragSrcEl[0] === $target[0]) return;
+
+        // Compute ordens before swapping
+        const ordemSrc = dragSrcEl.index() + 1;
+        const ordemTarget = $target.index() + 1;
+        const idSrc = dragSrcEl.data('id');
+        const idTarget = $target.data('id');
+
+        // Animate swap, then persist order on server
+        animateSwap(dragSrcEl, $target).then(() => {
+            // Send reorder request to server
+            $.post('src/php/reordenar_tarefa.php', {
+                id: idSrc,
+                ordem: ordemSrc,
+                id_alvo: idTarget,
+                ordem_alvo: ordemTarget
+            }, function(response) {
+                // reload tasks to ensure DB state matches UI
+                loadTasks();
+            }).fail(function() {
+                // On failure, reload to revert local change
+                loadTasks();
+            });
+        });
+    });
 
     // Carrega as tarefas ao iniciar
     loadTasks();
