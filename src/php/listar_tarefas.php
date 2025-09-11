@@ -1,7 +1,7 @@
 <?php
 include 'db.php';
 
-$result = pg_query($conn, "SELECT id, nome, custo, data_limite, concluida FROM tarefas ORDER BY ordem_apresentacao");
+$result = pg_query($conn, "SELECT id, nome, custo, data_limite, concluida, ordem_apresentacao FROM tarefas ORDER BY ordem_apresentacao");
 $tarefas = [];
 while ($row = pg_fetch_assoc($result)) {
     // Garante que concluida seja booleano

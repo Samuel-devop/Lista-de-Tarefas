@@ -293,12 +293,16 @@ $(document).ready(function() {
     $('#tasksContainer').on('click', '.move-up', function() {
         const item = $(this).closest('.task-item');
         const id = item.data('id');
+        const ordem = item.index() + 1;
         const prev = item.prev('.task-item');
         if (!prev.length) return;
         const prevId = prev.data('id');
+        const prevOrdem = prev.index() + 1;
         $.post('src/php/reordenar_tarefa.php', {
             id: id,
-            nova_ordem: prev.index() + 1
+            ordem: ordem,
+            id_alvo: prevId,
+            ordem_alvo: prevOrdem
         }, function(response) {
             loadTasks();
         });
@@ -306,12 +310,16 @@ $(document).ready(function() {
     $('#tasksContainer').on('click', '.move-down', function() {
         const item = $(this).closest('.task-item');
         const id = item.data('id');
+        const ordem = item.index() + 1;
         const next = item.next('.task-item');
         if (!next.length) return;
         const nextId = next.data('id');
+        const nextOrdem = next.index() + 1;
         $.post('src/php/reordenar_tarefa.php', {
             id: id,
-            nova_ordem: next.index() + 1
+            ordem: ordem,
+            id_alvo: nextId,
+            ordem_alvo: nextOrdem
         }, function(response) {
             loadTasks();
         });
