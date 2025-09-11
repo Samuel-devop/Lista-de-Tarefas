@@ -1,99 +1,141 @@
-# Lista-de-Tarefas
-Aqui é o repo onde eu mantenho uma lista de tarefas
+# ✅ Lista de Tarefas (Fatto)
 
-**Projeto - Sistema Lista de Tarefas (Fatto)**
+Este é um pequeno sistema web de gerenciamento de tarefas, desenvolvido como exercício prático. Ele permite cadastrar, listar, editar, excluir e reordenar tarefas por prioridade.
 
+---
 
+## 📋 Funcionalidades
 
-*Fazer: Sistema web para cadastro de tarefas*
+### 🗂 Tabela: `Tarefas`
+Cada tarefa possui os seguintes campos:
 
-*Entregar: link (github)*
+- `ID`: Identificador único (chave primária)
+- `Nome`: Nome da tarefa (único)
+- `Custo`: Valor numérico associado à tarefa
+- `Data Limite`: Data limite para conclusão
+- `Ordem de apresentação`: Campo numérico usado para ordenar as tarefas na tela (único e não repetido)
 
+---
 
+### 🏠 Página Principal
 
-**Tabela Tarefas**
+A página principal lista todas as tarefas do sistema, com as seguintes regras:
 
-. Identificador (chave primária/ID)
+- Lista **todos os registros da tabela Tarefas**, exceto o campo "Ordem de apresentação"
+- As tarefas são **ordenadas por "Ordem de apresentação"**
+- Se o **custo ≥ 1000**, a tarefa é **exibida de forma diferenciada**
+- Cada tarefa exibe dois ícones à direita:
+  - ✏️ Editar
+  - 🗑️ Excluir
 
-. Nome
+---
 
-. Custo
+### 🧹 Excluir Tarefa
 
-. Data limite
+- Ao clicar no ícone de excluir (🗑️), é exibida uma mensagem de confirmação **"Deseja realmente excluir? (Sim/Não)"**
+- Se confirmado, o registro é removido do banco
 
-. Ordem de apresentação (campo numérico, não repetido que serve para ordenar os registros na tela)
+---
 
+### ✏️ Editar Tarefa
 
+- O usuário pode **editar diretamente na tela principal** os campos:
+  - `Nome`
+  - `Custo`
+  - `Data Limite`
+- Restrições:
+  - Não é permitido repetir o nome de uma tarefa já existente
+  - A verificação de nomes é feita antes de salvar a alteração
 
+---
 
+### ➕ Incluir Nova Tarefa
 
-**# Lista de Tarefas**
+- Os campos informados pelo usuário são:
+  - `Nome`
+  - `Custo`
+  - `Data Limite`
+- O sistema gera automaticamente:
+  - `ID`
+  - `Ordem de apresentação` (adicionado como o **último** da lista)
+- Não pode haver duas tarefas com o mesmo nome
 
-É a página principal do sistema.
+---
 
-. Deve listar todos os registros da tabela "Tarefas" (um abaixo do outro).
+### 🔀 Reordenar Tarefas
 
-. Todos os campos, exceto "Ordem de apresentação", devem ser apresentados.
+A ordem das tarefas pode ser alterada de duas formas:
 
-. As tarefas devem ser apresentadas ordenadas pelo campo "Ordem de apresentação".
+#### 1. **Botões "Subir" / "Descer"**
 
-. Se o custo da tarefa é maior ou igual a 1000, deverá ser apresentada de forma
+- Cada tarefa possui botões para **mover para cima ou para baixo**
+- A primeira tarefa **não pode subir**
+- A última tarefa **não pode descer**
 
-diferente.
+#### 2. **Drag and Drop**
 
-. Ao lado direito de cada registro devem ser apresentados dois ícones, um para executar a função de "Editar" e outro para a função de "Excluir" registro.
+- O usuário pode **arrastar** uma tarefa para a posição desejada com o mouse
+- A nova ordem é salva automaticamente
 
+---
 
+## 💽 Banco de Dados
 
-**# Excluir**
+O banco de dados está disponível no arquivo:
 
-A função deve excluir o registro da Tarefa escolhida.
+Lista-de-tarefas/
+├── database/
+│   └── listadetarefasDB.sql
 
-. É necessário apresentar uma mensagem de confirmação (Sim/Não) para a realização da
+## 🛠️ Como aplicar o banco de dados no pgAdmin (PostgreSQL)
 
-exclusão.
+Se você estiver usando o **pgAdmin**, siga os passos abaixo para importar o arquivo `tarefas.sql` e configurar o banco de dados do projeto:
 
+### ✅ Pré-requisitos
+- Ter o PostgreSQL e o pgAdmin instalados
+- Já ter criado um banco de dados (ex: `lista_tarefas`)
+- Ter o arquivo `tarefas.sql` salvo no seu projeto (pasta `/database`)
 
+---
 
-\# **Editar**
+### 📥 Passo a passo para importar o `.sql` no pgAdmin
 
-A função deve editar o registro da Tarefa escolhida.
+1. **Abra o pgAdmin** e conecte-se ao seu servidor PostgreSQL.
 
-. Só é possível alterar o "Nome", o "Custo" e a "Data Limite".
+2. No painel à esquerda, **expanda "Servers" > seu servidor > Databases**.
 
-. É necessário verificar se o novo nome da tarefa já existe na base de dados. Se já existir, a alteração não poderá ser feita.
+3. **Clique com o botão direito** no banco de dados onde deseja importar (ex: `lista_tarefas`) e selecione **"Query Tool" (Ferramenta de Consulta)**.
 
-**A implementação é feita assim:** A edição é feita diretamente na tela principal, onde os três campos são habilitados para edição.
+4. No editor que abrir, clique no botão de **"abrir arquivo"** (ícone de pasta na barra superior).
 
+5. **Selecione o arquivo `tarefas.sql`** do seu projeto (ex: `database/tarefas.sql`).
 
+6. O conteúdo do arquivo será carregado no editor. Agora, clique no botão **"Executar"** (ícone de raio ou "Execute").
 
-**# Incluir**
+7. Após a execução, você verá a mensagem de sucesso e a tabela `Tarefas` estará criada no seu banco.
 
-A função deve permitir a inclusão de uma nova tarefa.
+---
 
-. Apenas os campos "Nome", "Custo" e "Data Limite" são informados pelo usuário.
+### 🧪 Verifique se funcionou
 
-. Os demais campos são gerados automaticamente pelo sistema.
+No painel à esquerda:
 
-. O registro recém-criado será o último na ordem de apresentação.
+- Vá até: `Databases > lista_tarefas > Schemas > public > Tables`
+- A tabela `Tarefas` deve estar listada lá
 
-. Não pode haver duas tarefas com o mesmo nome.
+Clique com o botão direito sobre ela e selecione **"View/Edit Data" > "All Rows"** para ver os dados (caso tenha algum de exemplo no `.sql`).
 
+---
 
+### 🧱 Estrutura da tabela esperada
 
-**# Reordenação das tarefas**
+```sql
+CREATE TABLE Tarefas (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL UNIQUE,
+    custo DECIMAL(10,2) NOT NULL,
+    data_limite DATE NOT NULL,
+    ordem_apresentacao INT NOT NULL UNIQUE
+);
 
-A função deve permitir que o usuário possa alterar a ordem de apresentação de uma tarefa.
-
-. Com o uso do mouse, o usuário arrasta uma tarefa para cima ou para baixo, soltando na
-
-posição desejada. Estilo drag-and-drop.
-
- 
-
-. Em cada linha (registro) deve ter dois botões, uma para "subir" a tarefa na ordem de
-
-apresentação e outro para "descer". Obviamente a primeira tarefa não poderá "subir"
-
-e nem a última poderá "descer".
 
