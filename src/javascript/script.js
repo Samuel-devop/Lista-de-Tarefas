@@ -15,7 +15,7 @@ $(document).ready(function() {
         }
     });
 
-    // Adiciona spinner de loading
+    // Adiciona spinner de loading pra quando está carregando
     function showLoadingSpinner() {
         if ($('#loading-spinner').length) return;
         $('#tasksContainer').html('<div id="loading-spinner" style="display:flex; justify-content:center; align-items:center; padding:32px;"><i class="fas fa-spinner fa-spin" style="font-size:2.2rem; color:#b71c1c;"></i></div>');
@@ -37,8 +37,7 @@ $(document).ready(function() {
                 tarefas = [];
             }
             hideLoadingSpinner();
-            // Clear container first to avoid duplicating items when loadTasks
-            // is called multiple times (sometimes with showSpinner=false).
+
             $('#tasksContainer').empty();
             if (!tarefas.length) {
                 $('#tasksContainer').html(`
@@ -50,18 +49,15 @@ $(document).ready(function() {
                 return;
             }
             tarefas.forEach(tarefa => {
-                // Parse date-only string (YYYY-MM-DD) as a local Date to avoid timezone shift
                 let formattedDate = '';
                 if (tarefa.data_limite) {
                     const parts = tarefa.data_limite.split('-');
-                    // If format is YYYY-MM-DD, avoid Date parsing (timezone) and format manually
                     if (parts.length === 3 && parts[0].length === 4) {
                         const y = parts[0];
                         const m = parts[1];
                         const d = parts[2].split('T')[0];
                         formattedDate = `${d}/${m}/${y}`;
                     } else {
-                        // Fallback: try Date parsing
                         const dateObj = new Date(tarefa.data_limite);
                         if (!isNaN(dateObj.getTime())) {
                             formattedDate = dateObj.toLocaleDateString('pt-BR');
@@ -72,12 +68,10 @@ $(document).ready(function() {
                 }
                 const priceValue = parseFloat(tarefa.custo);
                 const formattedPrice = priceValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                // Pass raw data_limite as last arg so we can use it when editing without relying on displayed text
                 addTaskItem(tarefa.id, tarefa.nome, formattedPrice, formattedDate, priceValue >= 1000, tarefa.concluida, tarefa.data_limite);
             });
-            // restore scroll position if requested (best-effort)
             if (preserveScroll && prevScroll !== null) {
-                try { window.scrollTo(0, prevScroll); } catch (e) { /* ignore */ }
+                try { window.scrollTo(0, prevScroll); } catch (e) {  }
             }
         });
     }
@@ -85,7 +79,6 @@ $(document).ready(function() {
     // Adiciona tarefa na tela
     function addTaskItem(id, taskName, formattedPrice, formattedDate, isHighCost = false) {
     const taskItem = $('<div>').addClass('task-item').attr('data-id', id);
-    // store raw date if provided (7th argument)
     const rawDate = arguments.length > 6 ? arguments[6] : null;
     if (rawDate) taskItem.attr('data-date', rawDate);
     if (isHighCost) taskItem.addClass('high-cost');
@@ -160,17 +153,14 @@ $(document).ready(function() {
         });
     }
 
-    // --- Drag & drop swapping with animation ---
     let dragSrcEl = null;
-    // Auto-scroll while dragging when cursor is near top/bottom of the container
     let _autoScrollRaf = null;
-    let _autoScrollDir = 0; // -1 up, 0 none, 1 down
-    let _autoScrollSpeed = 0; // px per frame
-    const AUTO_SCROLL_EDGE = 140; // px from edge to start accelerating (aumentado para iniciar autoscroll mais cedo)
-    const AUTO_SCROLL_MAX_SPEED = 28; // max px per frame (smooth)
-    const AUTO_SCROLL_MIN_SPEED = 6; // mínimo perceptível de px por frame para iniciar movimento rápido
+    let _autoScrollDir = 0;
+    let _autoScrollSpeed = 0;
+    const AUTO_SCROLL_EDGE = 140;
+    const AUTO_SCROLL_MAX_SPEED = 28;
+    const AUTO_SCROLL_MIN_SPEED = 6;
 
-    // Helper: animate swap between two jQuery elements, returns a Promise
     function animateSwap($a, $b) {
         return new Promise((resolve) => {
             const rectA = $a[0].getBoundingClientRect();
@@ -178,28 +168,22 @@ $(document).ready(function() {
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
 
-            // Clone nodes for animation
             const $cloneA = $a.clone();
             const $cloneB = $b.clone();
 
-            // Style clones
             $cloneA.css({ position: 'absolute', top: rectA.top + scrollTop, left: rectA.left + scrollLeft, width: rectA.width, margin: 0, zIndex: 9999 });
             $cloneB.css({ position: 'absolute', top: rectB.top + scrollTop, left: rectB.left + scrollLeft, width: rectB.width, margin: 0, zIndex: 9999 });
 
             $('body').append($cloneA).append($cloneB);
 
-            // Hide originals while animating
             $a.css('visibility', 'hidden');
             $b.css('visibility', 'hidden');
 
             const dur = 280;
-            // Animate clones to each other's positions
             $cloneA.animate({ top: rectB.top + scrollTop, left: rectB.left + scrollLeft }, dur);
             $cloneB.animate({ top: rectA.top + scrollTop, left: rectA.left + scrollLeft }, dur, function() {
-                // After animation complete: swap DOM elements
                 const $aNext = $a.next();
                 const $bNext = $b.next();
-                // If nodes are adjacent, handle accordingly
                 if ($aNext && $aNext[0] === $b[0]) {
                     $b.insertBefore($a);
                 } else if ($bNext && $bNext[0] === $a[0]) {
@@ -214,7 +198,6 @@ $(document).ready(function() {
                     }
                 }
 
-                // Clean up
                 $cloneA.remove();
                 $cloneB.remove();
                 $a.css('visibility', '');
@@ -225,7 +208,6 @@ $(document).ready(function() {
         });
     }
 
-    // Drag handlers (delegated)
     $('#tasksContainer').on('dragstart', '.task-item', function(e) {
         dragSrcEl = $(this);
         e.originalEvent.dataTransfer.effectAllowed = 'move';
@@ -237,22 +219,18 @@ $(document).ready(function() {
         $(this).removeClass('dragging');
         dragSrcEl = null;
         $('.task-item').removeClass('drag-over');
-        // stop any auto-scroll activity
         if (_autoScrollRaf) { cancelAnimationFrame(_autoScrollRaf); _autoScrollRaf = null; }
         _autoScrollDir = 0; _autoScrollSpeed = 0;
     });
 
-    // Enable dragging only when handle is pressed
     $('#tasksContainer').on('mousedown touchstart', '.drag-handle', function(e) {
         const $item = $(this).closest('.task-item');
         $item.attr('draggable', 'true');
-        // For touch, initiate a synthetic drag by setting dataTransfer is not possible, but we'll rely on touch events in modern browsers
     });
     $(document).on('mouseup touchend touchcancel', function(e) {
         $('.task-item[draggable="true"]').attr('draggable', 'false');
     });
 
-    // Dragover on container: handle highlighting and smooth auto-scroll
     $('#tasksContainer').on('dragover', function(e) {
         e.preventDefault();
         const $container = $(this);
@@ -260,12 +238,10 @@ $(document).ready(function() {
         const rect = containerEl.getBoundingClientRect();
     const clientY = e.originalEvent.clientY;
 
-        // highlight the nearest task-item under cursor
         const $under = $(e.target).closest('.task-item');
         $('.task-item').removeClass('drag-over');
         if ($under.length) $under.addClass('drag-over');
 
-        // compute distance to edges and desired speed
         const distToBottom = rect.bottom - clientY;
         const distToTop = clientY - rect.top;
         let dir = 0;
@@ -279,15 +255,12 @@ $(document).ready(function() {
         }
 
     _autoScrollDir = dir;
-    // Use sqrt curve so speed ramps up earlier (more responsive near the edge)
     const eased = Math.sqrt(Math.max(0, ratio));
     _autoScrollSpeed = Math.max(AUTO_SCROLL_MIN_SPEED, Math.min(AUTO_SCROLL_MAX_SPEED, eased * AUTO_SCROLL_MAX_SPEED));
 
-        // start RAF loop if needed
         if (!_autoScrollRaf && _autoScrollDir !== 0) {
             const step = () => {
                 if (!_autoScrollDir) { _autoScrollRaf = null; return; }
-                // scroll container if it can, otherwise window
                 if (containerEl.scrollHeight > containerEl.clientHeight) {
                     containerEl.scrollTop += _autoScrollDir * _autoScrollSpeed;
                 } else {
@@ -306,34 +279,27 @@ $(document).ready(function() {
         $target.removeClass('drag-over');
         if (!dragSrcEl || dragSrcEl[0] === $target[0]) return;
 
-        // Compute ordens before swapping
         const ordemSrc = dragSrcEl.index() + 1;
         const ordemTarget = $target.index() + 1;
         const idSrc = dragSrcEl.data('id');
         const idTarget = $target.data('id');
 
-        // Animate swap, then persist order on server
         animateSwap(dragSrcEl, $target).then(() => {
-                // Send reorder request to server
                 $.post('src/php/reordenar_tarefa.php', {
                 id: idSrc,
                 ordem: ordemSrc,
                 id_alvo: idTarget,
                 ordem_alvo: ordemTarget
             }, function(response) {
-                // reload tasks to ensure DB state matches UI
                     loadTasks(false, true);
             }).fail(function() {
-                // On failure, reload to revert local change
                     loadTasks(false, true);
             });
         });
     });
 
-    // Carrega as tarefas ao iniciar
     loadTasks();
 
-    // Manipular o envio do formulário
     $('#expandedForm').off('submit').on('submit', function(e) {
         e.preventDefault();
         const taskName = $('#taskName').val().trim();
@@ -367,7 +333,6 @@ $(document).ready(function() {
                 }
                 hideLoadingSpinner();
                 if (res.success) {
-                    // Não mostrar pop-up de sucesso
                     loadTasks(true, true);
                     $('#expandedForm')[0].reset();
                     $('#expandedForm').slideUp(300);
@@ -464,18 +429,14 @@ $(document).ready(function() {
         const name = taskItem.find('h3').text().trim();
         let priceText = taskItem.find('.task-price span').text();
         let price = priceText.replace(/[^\d,\.]/g, '').replace('.', '').replace(',', '.');
-    // Prefer raw date from data attribute (YYYY-MM-DD). Fallback to displayed text (DD/MM/YYYY)
     let date = taskItem.attr('data-date') || taskItem.find('.task-date span').text();
-        // Cria campos editáveis
     taskItem.find('h3').replaceWith(`<input type='text' class='edit-name' value='${name}' style='margin-bottom:8px; width:90%; font-size:1.1rem; font-weight:600; color:#b71c1c; border:1px solid #b71c1c; border-radius:6px; padding:4px 10px;'>`);
-    // Normalize date to YYYY-MM-DD for the date input
     let inputDateVal = '';
     if (/^\d{4}-\d{2}-\d{2}/.test(date)) {
         inputDateVal = date.split('T')[0];
     } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(date)) {
         inputDateVal = date.split('/').reverse().join('-');
     } else {
-        // last resort: try parsing with Date
         const dt = new Date(date);
         if (!isNaN(dt.getTime())) {
             inputDateVal = dt.toISOString().split('T')[0];

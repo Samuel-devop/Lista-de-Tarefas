@@ -98,11 +98,6 @@ body {
     gap: 18px;
 }
 
-/* Background FATTO agora é gerenciado via JS (tamanho/densidade dinâmicos)
-   As regras abaixo estilizam os elementos que `src/javascript/fatto-bg.js`
-   insere no DOM para produzir o padrão repetido "FATTO". Mantemos
-   pointer-events:none e z-index baixo para não interferir no conteúdo.
-*/
 .fatto-bg {
     position: fixed;
     top: 0;
@@ -139,7 +134,7 @@ body {
     transform-origin: center;
 }
 
-/* Barrinha minimalista abaixo do título principal (#to_do h1) */
+/* Barrinha  abaixo do título principal (#to_do h1) */
 #to_do h1 {
     position: relative;
     margin-bottom: 8px;
@@ -147,8 +142,6 @@ body {
     display: inline-block; /* faz a largura do h1 ser somente do texto */
 }
 
-/* Header row: place title left and logo at the opposite corner (right)
-   on small screens logo moves below the title */
 #to_do h1::after {
     content: '';
     display: block;
@@ -159,8 +152,6 @@ body {
     margin: 6px 0 0 0; /* alinhada à esquerda do título */
     border-radius: 3px;
 }
-
-
 
 #toggleForm {
     background: #b71c1c;
@@ -321,8 +312,6 @@ button[type="submit"]:hover {
     font-weight: 600;
 }
 
-/* .task-details was removed: layout uses .task-details-col in JS-generated markup */
-
 .task-details-col {
     display: flex;
     flex-direction: column;
@@ -469,8 +458,3 @@ button[type="submit"]:hover {
     margin-bottom: 10px;
     color: #b71c1c;
 }
-
-/* Legacy footer-box/footer-left/footer-center/footer-right were removed because
-    current HTML uses #footer-flutuante, .footer-content, .footer-nome and .footer-icons */
-
-/* background FATTO agora é gerenciado via JS (tamanho/densidade dinâmicos) */
