@@ -125,6 +125,35 @@ body::before {
     display: inline-block; /* faz a largura do h1 ser somente do texto */
 }
 
+/* Header row: place title left and logo at the opposite corner (right)
+   on small screens logo moves below the title */
+.header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+    width: 100%; /* ensure full width so space-between works */
+    flex-wrap: nowrap; /* prevent logo stacking */
+}
+.header-logo {
+    max-width: 120px;
+    max-height: 56px;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    margin-left: 12px;
+    align-self: center;
+}
+
+@media (max-width: 480px) {
+    /* keep elements on one line but scale the logo down on very small screens */
+    .header-logo {
+        max-width: 72px;
+        max-height: 40px;
+    }
+}
+
 #to_do h1::after {
     content: '';
     display: block;

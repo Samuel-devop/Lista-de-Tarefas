@@ -45,10 +45,30 @@ $(document).ready(function() {
                 return;
             }
             tarefas.forEach(tarefa => {
-                const formattedDate = new Date(tarefa.data_limite).toLocaleDateString('pt-BR');
+                // Parse date-only string (YYYY-MM-DD) as a local Date to avoid timezone shift
+                let formattedDate = '';
+                if (tarefa.data_limite) {
+                    const parts = tarefa.data_limite.split('-');
+                    // If format is YYYY-MM-DD, avoid Date parsing (timezone) and format manually
+                    if (parts.length === 3 && parts[0].length === 4) {
+                        const y = parts[0];
+                        const m = parts[1];
+                        const d = parts[2].split('T')[0];
+                        formattedDate = `${d}/${m}/${y}`;
+                    } else {
+                        // Fallback: try Date parsing
+                        const dateObj = new Date(tarefa.data_limite);
+                        if (!isNaN(dateObj.getTime())) {
+                            formattedDate = dateObj.toLocaleDateString('pt-BR');
+                        } else {
+                            formattedDate = tarefa.data_limite;
+                        }
+                    }
+                }
                 const priceValue = parseFloat(tarefa.custo);
                 const formattedPrice = priceValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                addTaskItem(tarefa.id, tarefa.nome, formattedPrice, formattedDate, priceValue >= 1000, tarefa.concluida);
+                // Pass raw data_limite as last arg so we can use it when editing without relying on displayed text
+                addTaskItem(tarefa.id, tarefa.nome, formattedPrice, formattedDate, priceValue >= 1000, tarefa.concluida, tarefa.data_limite);
             });
         });
     }
@@ -56,6 +76,9 @@ $(document).ready(function() {
     // Adiciona tarefa na tela
     function addTaskItem(id, taskName, formattedPrice, formattedDate, isHighCost = false) {
     const taskItem = $('<div>').addClass('task-item').attr('data-id', id);
+    // store raw date if provided (7th argument)
+    const rawDate = arguments.length > 6 ? arguments[6] : null;
+    if (rawDate) taskItem.attr('data-date', rawDate);
     if (isHighCost) taskItem.addClass('high-cost');
     // Adiciona classe completed se estiver concluída
     if (arguments.length > 5 && arguments[5]) taskItem.addClass('completed');
@@ -246,11 +269,25 @@ $(document).ready(function() {
         const name = taskItem.find('h3').text().trim();
         let priceText = taskItem.find('.task-price span').text();
         let price = priceText.replace(/[^\d,\.]/g, '').replace('.', '').replace(',', '.');
-        const date = taskItem.find('.task-date span').text();
+    // Prefer raw date from data attribute (YYYY-MM-DD). Fallback to displayed text (DD/MM/YYYY)
+    let date = taskItem.attr('data-date') || taskItem.find('.task-date span').text();
         // Cria campos editáveis
     taskItem.find('h3').replaceWith(`<input type='text' class='edit-name' value='${name}' style='margin-bottom:8px; width:90%; font-size:1.1rem; font-weight:600; color:#b71c1c; border:1px solid #b71c1c; border-radius:6px; padding:4px 10px;'>`);
     const today = new Date().toISOString().split('T')[0];
-    taskItem.find('.task-date span').replaceWith(`<input type='date' class='edit-date' value='${date.split('/').reverse().join('-')}' min='${today}' style='border:1px solid #b71c1c; border-radius:6px; padding:4px 10px;'>`);
+    // Normalize date to YYYY-MM-DD for the date input
+    let inputDateVal = '';
+    if (/^\d{4}-\d{2}-\d{2}/.test(date)) {
+        inputDateVal = date.split('T')[0];
+    } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(date)) {
+        inputDateVal = date.split('/').reverse().join('-');
+    } else {
+        // last resort: try parsing with Date
+        const dt = new Date(date);
+        if (!isNaN(dt.getTime())) {
+            inputDateVal = dt.toISOString().split('T')[0];
+        }
+    }
+    taskItem.find('.task-date span').replaceWith(`<input type='date' class='edit-date' value='${inputDateVal}' min='${today}' style='border:1px solid #b71c1c; border-radius:6px; padding:4px 10px;'>`);
         taskItem.find('.task-price span').replaceWith(`<input type='number' class='edit-price' value='${price}' min='0' step='0.01' style='border:1px solid #b71c1c; border-radius:6px; padding:4px 10px;'>`);
         taskItem.find('.edit-btn').hide();
         taskItem.find('.delete-btn').hide();
