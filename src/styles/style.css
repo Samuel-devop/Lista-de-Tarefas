@@ -1,3 +1,26 @@
+/* Círculo para botões de ordenação */
+.move-up, .move-down {
+    background: #fff;
+    border: 2px solid #b71c1c;
+    color: #b71c1c;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px #b71c1c22;
+    transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+    padding: 0;
+}
+
+.move-up:hover, .move-down:hover {
+    background: #b71c1c;
+    color: #fff;
+    box-shadow: 0 4px 16px #b71c1c44;
+}
 * {
     margin: 0;
     padding: 0;
@@ -27,6 +50,50 @@ body {
     border: 1.5px solid #b71c1c;
     transition: box-shadow 0.3s, border-color 0.3s;
     z-index: 1;
+}
+
+#footer-flutuante {
+    width: 100%;
+    max-width: 600px;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(183, 28, 28, 0.10);
+    border: 1.5px solid #b71c1c;
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 16px auto 0 auto;
+    z-index: 1;
+}
+
+.footer-content {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.footer-nome {
+    font-size: 1.1rem;
+    color: #b71c1c;
+    font-weight: 600;
+}
+
+.footer-icons {
+    display: flex;
+    gap: 18px;
+}
+
+.footer-icons i {
+    font-size: 1.5rem;
+    color: #b71c1c;
+    transition: color 0.2s;
+    cursor: pointer;
+}
+.footer-icons i:hover {
+    color: #d32f2f;
+}
 }
 
 #to_do:hover {
@@ -265,6 +332,7 @@ button[type="submit"]:hover {
 .delete-btn {
     background: #b71c1c;
     color: #fff;
+    border: 1.5px solid #fff;
 }
 
 .delete-btn:hover {
@@ -324,53 +392,13 @@ button[type="submit"]:hover {
 }
 
 .completed h3 {
-    text-decoration: line-through;
     color: #388e3c;
     font-weight: 700;
     text-shadow: 0 2px 8px #43a04722;
-    padding-left: 28px;
     position: relative;
 }
 
-.completed h3::before {
-    content: '\2714'; /* checkmark */
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    padding: 7px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 15px;
-    font-weight: 500;
-    box-shadow: 0 2px 6px rgba(183,28,28,0.07);
-    transition: background 0.3s, box-shadow 0.3s, color 0.3s, border 0.3s;
-    border: 1.5px solid #b71c1c;
-    background: #fff;
-    color: #b71c1c;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    letter-spacing: 0.5px;
-}
 
-.completed::after {
-    content: 'Concluída';
-    position: absolute;
-    top: 16px;
-    right: 18px;
-    background: linear-gradient(90deg, #43a047 60%, #388e3c 100%);
-    color: #fff;
-    font-size: 0.95rem;
-    font-weight: 700;
-    padding: 5px 16px;
-    border-radius: 16px;
-    box-shadow: 0 4px 16px #43a04744;
-    letter-spacing: 1px;
-    border: 2px solid #fff;
-    text-shadow: 0 2px 8px #388e3c44;
-    z-index: 3;
-}
 
 .empty-state {
     text-align: center;

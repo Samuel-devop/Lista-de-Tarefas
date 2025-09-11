@@ -99,7 +99,7 @@ $(document).ready(function() {
                     } else {
                         taskItem.removeClass('completed');
                     }
-                    showPopup(res.message, true);
+                    // Removido popup ao concluir ou deixar pendente
                 } else {
                     showPopup(res.message || 'Erro ao atualizar status da tarefa.');
                 }
