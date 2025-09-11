@@ -1,3 +1,13 @@
+body {
+    background: #f6f6f6;
+}
+
+
+/* Garante que o conteúdo principal fique acima do fundo */
+#to_do, .footer-content, header, .tarefas, .card, .card-body {
+    position: relative;
+    z-index: 1;
+}
 /* Círculo para botões de ordenação */
 .move-up, .move-down {
     background: #fff;
@@ -38,10 +48,13 @@ body {
     padding: 40px 20px;
 }
 
+
+
 #to_do {
     width: 100%;
     max-width: 600px;
     background: #fff;
+    position: relative;
     border-radius: 18px;
     box-shadow: 0 8px 32px rgba(183, 28, 28, 0.10);
     padding: 36px 32px 28px 32px;
@@ -85,45 +98,45 @@ body {
     gap: 18px;
 }
 
-.footer-icons i {
-    font-size: 1.5rem;
-    color: #b71c1c;
-    transition: color 0.2s;
-    cursor: pointer;
-}
-.footer-icons i:hover {
-    color: #d32f2f;
-}
-}
-
-#to_do:hover {
-    box-shadow: 0 16px 48px rgba(183, 28, 28, 0.13);
-    border-color: #d32f2f;
-}
-
-h1 {
-    color: #b71c1c;
-    text-align: center;
-    margin-bottom: 32px;
-    font-size: 2.1rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-    position: relative;
-    padding-bottom: 14px;
-}
-
-h1:after {
-    content: '';
-    position: absolute;
+/* Background estático com padrão SVG repetido (preenche toda a viewport)
+   - usa SVG in‑line como data URL para repetir a palavra FATTO em grid
+*/
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
     bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 3px;
-    background: #b71c1c;
-    border-radius: 2px;
-    opacity: 0.7;
+    pointer-events: none;
+    z-index: 0;
+    /* SVG pattern: 'FATTO' centralizado no tile, cor tema (#b71c1c) com baixa opacidade */
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='520' height='160'><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='Montserrat,Segoe UI,Arial' font-weight='900' font-size='96' fill='%23b71c1c' fill-opacity='0.12'>FATTO</text></svg>");
+    background-repeat: repeat;
+    background-position: center;
+    background-size: 520px 160px; /* tamanho do tile — ajusta densidade */
 }
+
+/* Barrinha minimalista abaixo do título principal (#to_do h1) */
+#to_do h1 {
+    position: relative;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    display: inline-block; /* faz a largura do h1 ser somente do texto */
+}
+
+#to_do h1::after {
+    content: '';
+    display: block;
+    width: 100%; /* mesma largura do título */
+    height: 2px; /* mais fina */
+    background: #b71c1c;
+    opacity: 1; /* sem transparência */
+    margin: 6px 0 0 0; /* alinhada à esquerda do título */
+    border-radius: 3px;
+}
+
+
 
 #toggleForm {
     background: #b71c1c;
@@ -466,3 +479,5 @@ button[type="submit"]:hover {
 .footer-right i:hover {
     color: #d32f2f;
 }
+
+/* background FATTO agora é gerenciado via JS (tamanho/densidade dinâmicos) */
