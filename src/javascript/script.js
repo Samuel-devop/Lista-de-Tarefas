@@ -26,7 +26,8 @@ $(document).ready(function() {
 
     // Função para carregar tarefas do banco
     // showSpinner: quando false evita mostrar a animação de loading (útil durante reordenação)
-    function loadTasks(showSpinner = true) {
+    function loadTasks(showSpinner = true, preserveScroll = false) {
+        const prevScroll = preserveScroll ? (window.pageYOffset || document.documentElement.scrollTop) : null;
         if (showSpinner) showLoadingSpinner();
         $.get('src/php/listar_tarefas.php', function(data) {
             let tarefas = [];
@@ -74,6 +75,10 @@ $(document).ready(function() {
                 // Pass raw data_limite as last arg so we can use it when editing without relying on displayed text
                 addTaskItem(tarefa.id, tarefa.nome, formattedPrice, formattedDate, priceValue >= 1000, tarefa.concluida, tarefa.data_limite);
             });
+            // restore scroll position if requested (best-effort)
+            if (preserveScroll && prevScroll !== null) {
+                try { window.scrollTo(0, prevScroll); } catch (e) { /* ignore */ }
+            }
         });
     }
 
@@ -146,7 +151,7 @@ $(document).ready(function() {
                         } else {
                             taskItem.removeClass('completed');
                         }
-                        loadTasks();
+                        loadTasks(true, true);
                     } else {
                         showPopup(res.message || 'Erro ao atualizar tarefa.');
                     }
@@ -317,10 +322,10 @@ $(document).ready(function() {
                 ordem_alvo: ordemTarget
             }, function(response) {
                 // reload tasks to ensure DB state matches UI
-                    loadTasks(false);
+                    loadTasks(false, true);
             }).fail(function() {
                 // On failure, reload to revert local change
-                    loadTasks(false);
+                    loadTasks(false, true);
             });
         });
     });
@@ -363,7 +368,7 @@ $(document).ready(function() {
                 hideLoadingSpinner();
                 if (res.success) {
                     // Não mostrar pop-up de sucesso
-                    loadTasks();
+                    loadTasks(true, true);
                     $('#expandedForm')[0].reset();
                     $('#expandedForm').slideUp(300);
                     $('#toggleForm').html('<i class="fas fa-plus"></i> Adicionar Nova Tarefa');
@@ -444,7 +449,7 @@ $(document).ready(function() {
                 try { res = JSON.parse(response); } catch (e) { res = {}; }
                 if (res.success) {
                     showPopup(res.message || 'Tarefa excluída com sucesso!', true);
-                    loadTasks();
+                    loadTasks(true, true);
                 } else {
                     showPopup(res.message || 'Erro ao excluir tarefa.');
                 }
@@ -489,7 +494,7 @@ $(document).ready(function() {
 
     // Cancelar edição
     $('#tasksContainer').on('click', '.cancel-edit-btn', function() {
-        loadTasks();
+        loadTasks(true, true);
     });
 
     // Salvar edição
@@ -510,9 +515,9 @@ $(document).ready(function() {
         }, function(response) {
             let res;
             try { res = JSON.parse(response); } catch (e) { res = {}; }
-            if (res.success) {
+                if (res.success) {
                 showPopup(res.message || 'Tarefa editada com sucesso!', true);
-                loadTasks();
+                loadTasks(true, true);
             } else {
                 showPopup(res.message || 'Erro ao editar tarefa.');
             }
@@ -534,7 +539,7 @@ $(document).ready(function() {
             id_alvo: prevId,
             ordem_alvo: prevOrdem
         }, function(response) {
-            loadTasks(false);
+                loadTasks(false, true);
         });
     });
     $('#tasksContainer').on('click', '.move-down', function() {
@@ -551,7 +556,7 @@ $(document).ready(function() {
             id_alvo: nextId,
             ordem_alvo: nextOrdem
         }, function(response) {
-            loadTasks(false);
+                loadTasks(false, true);
         });
     });
 
