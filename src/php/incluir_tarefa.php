@@ -6,7 +6,13 @@ include 'db.php';
 
 $nome = pg_escape_string($conn, $_POST['nome']);
 $custo = floatval($_POST['custo']);
+
 $data_limite = pg_escape_string($conn, $_POST['data_limite']);
+$hoje = date('Y-m-d');
+if ($data_limite < $hoje) {
+    echo json_encode(["success" => false, "message" => "A data limite não pode ser anterior a hoje."]);
+    exit;
+}
 
 // Verifica se o nome já existe
 $result = pg_query($conn, "SELECT id FROM tarefas WHERE nome = '$nome'");

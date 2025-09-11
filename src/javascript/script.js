@@ -1,4 +1,7 @@
 $(document).ready(function() {
+    // Define o mínimo do campo de data para hoje
+    const today = new Date().toISOString().split('T')[0];
+    $('#taskDate').attr('min', today);
 
     // Alternar a exibição do formulário
     $('#toggleForm').click(function() {
@@ -58,7 +61,7 @@ $(document).ready(function() {
     if (arguments.length > 5 && arguments[5]) taskItem.addClass('completed');
         taskItem.html(`
             <div class="task-main-row" style="display:flex; align-items:flex-start; gap:12px;">
-                <div style="flex:1;">
+                <div style="flex:1; position:relative;">
                     <h3>${taskName}</h3>
                     <div class="task-details-col" style="display:flex; flex-direction:column; align-items:flex-start; gap:8px;">
                         <div class="task-date">
@@ -69,46 +72,46 @@ $(document).ready(function() {
                         </div>
                     </div>
                 </div>
-                <div class="move-actions" style="display:flex; gap:6px; margin-top:8px;">
-                    <button class="move-up" title="Subir" style="background:none; border:none; color:#b71c1c; font-size:18px; cursor:pointer;"><i class="fas fa-arrow-up"></i></button>
-                    <button class="move-down" title="Descer" style="background:none; border:none; color:#b71c1c; font-size:18px; cursor:pointer;"><i class="fas fa-arrow-down"></i></button>
+                <div class="move-actions" style="display:flex; flex-direction:column; align-items:center; gap:6px; margin-top:8px; position:relative;">
+                    <div style="display:flex; gap:6px;">
+                        <button class="move-up" title="Subir" style="background:none; border:none; color:#b71c1c; font-size:18px; cursor:pointer;"><i class="fas fa-arrow-up"></i></button>
+                        <button class="move-down" title="Descer" style="background:none; border:none; color:#b71c1c; font-size:18px; cursor:pointer;"><i class="fas fa-arrow-down"></i></button>
+                    </div>
+                    ${arguments[5] ? '<span class="completed-badge" style="margin-top:6px; background:#43a047; color:#fff; font-size:0.75rem; padding:2px 8px; border-radius:8px;">Concluída</span>' : '<span class="pending-badge" style="margin-top:6px; background:#FFD600; color:#333; font-size:0.75rem; padding:2px 8px; border-radius:8px;">Pendente</span>'}
                 </div>
             </div>
             <div class="task-actions" style="margin-top:10px;">
-                <button class="complete-btn"><i class="fas fa-check"></i> Concluir</button>
+                <button class="complete-btn"><i class="fas fa-check"></i> ${arguments[5] ? 'Desfazer' : 'Concluir'}</button>
                 <button class="edit-btn"><i class="fas fa-edit"></i> Editar</button>
                 <button class="delete-btn"><i class="fas fa-trash"></i> Excluir</button>
             </div>
         `);
         $('#tasksContainer').append(taskItem);
-    // Delegação de evento para o botão de concluir (agora integrado ao backend)
-    $('#tasksContainer').off('click', '.complete-btn').on('click', '.complete-btn', function() {
-        const taskItem = $(this).closest('.task-item');
-        const id = taskItem.data('id');
-        $.ajax({
-            url: 'src/php/concluir_tarefa.php',
-            type: 'POST',
-            data: { id: id },
-            success: function(response) {
-                let res;
-                try { res = JSON.parse(response); } catch (e) { res = {}; }
-                if (res.success) {
-                    // Atualiza visual conforme status retornado
-                    if (res.message && res.message.includes('concluída')) {
-                        taskItem.addClass('completed');
+        // Delegação de evento para o botão de concluir/desfazer
+        $('#tasksContainer').off('click', '.complete-btn').on('click', '.complete-btn', function() {
+            const taskItem = $(this).closest('.task-item');
+            const id = taskItem.data('id');
+            const isCompleted = taskItem.hasClass('completed');
+            $.ajax({
+                url: 'src/php/concluir_tarefa.php',
+                type: 'POST',
+                data: { id: id, desfazer: isCompleted ? 1 : 0 },
+                success: function(response) {
+                    let res;
+                    try { res = JSON.parse(response); } catch (e) { res = {}; }
+                    if (res.success) {
+                        if (res.message && res.message.includes('concluída')) {
+                            taskItem.addClass('completed');
+                        } else {
+                            taskItem.removeClass('completed');
+                        }
+                        loadTasks();
                     } else {
-                        taskItem.removeClass('completed');
+                        showPopup(res.message || 'Erro ao atualizar tarefa.');
                     }
-                    // Removido popup ao concluir ou deixar pendente
-                } else {
-                    showPopup(res.message || 'Erro ao atualizar status da tarefa.');
                 }
-            },
-            error: function(xhr) {
-                showPopup('Erro ao conectar ao servidor.');
-            }
+            });
         });
-    });
     }
 
     // Carrega as tarefas ao iniciar
@@ -245,8 +248,9 @@ $(document).ready(function() {
         let price = priceText.replace(/[^\d,\.]/g, '').replace('.', '').replace(',', '.');
         const date = taskItem.find('.task-date span').text();
         // Cria campos editáveis
-        taskItem.find('h3').replaceWith(`<input type='text' class='edit-name' value='${name}' style='margin-bottom:8px; width:90%; font-size:1.1rem; font-weight:600; color:#b71c1c; border:1px solid #b71c1c; border-radius:6px; padding:4px 10px;'>`);
-        taskItem.find('.task-date span').replaceWith(`<input type='date' class='edit-date' value='${date.split('/').reverse().join('-')}' style='border:1px solid #b71c1c; border-radius:6px; padding:4px 10px;'>`);
+    taskItem.find('h3').replaceWith(`<input type='text' class='edit-name' value='${name}' style='margin-bottom:8px; width:90%; font-size:1.1rem; font-weight:600; color:#b71c1c; border:1px solid #b71c1c; border-radius:6px; padding:4px 10px;'>`);
+    const today = new Date().toISOString().split('T')[0];
+    taskItem.find('.task-date span').replaceWith(`<input type='date' class='edit-date' value='${date.split('/').reverse().join('-')}' min='${today}' style='border:1px solid #b71c1c; border-radius:6px; padding:4px 10px;'>`);
         taskItem.find('.task-price span').replaceWith(`<input type='number' class='edit-price' value='${price}' min='0' step='0.01' style='border:1px solid #b71c1c; border-radius:6px; padding:4px 10px;'>`);
         taskItem.find('.edit-btn').hide();
         taskItem.find('.delete-btn').hide();

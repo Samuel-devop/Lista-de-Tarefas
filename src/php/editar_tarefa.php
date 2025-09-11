@@ -4,7 +4,13 @@ include 'db.php';
 $id = $_POST['id'];
 $novo_nome = $_POST['nome'];
 $novo_custo = $_POST['custo'];
+
 $nova_data = $_POST['data_limite'];
+$hoje = date('Y-m-d');
+if ($nova_data < $hoje) {
+	echo json_encode(["success" => false, "message" => "A data limite não pode ser anterior a hoje."]);
+	exit;
+}
 
 // Verifica se o novo nome já existe para outra tarefa
 $result = pg_query($conn, "SELECT id FROM tarefas WHERE nome = '$novo_nome' AND id != $id");
