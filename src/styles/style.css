@@ -4,7 +4,7 @@ body {
 
 
 /* Garante que o conteúdo principal fique acima do fundo */
-#to_do, .footer-content, header, .tarefas, .card, .card-body {
+#to_do, .footer-content {
     position: relative;
     z-index: 1;
 }
@@ -98,23 +98,45 @@ body {
     gap: 18px;
 }
 
-/* Background estático com padrão SVG repetido (preenche toda a viewport)
-   - usa SVG in‑line como data URL para repetir a palavra FATTO em grid
+/* Background FATTO agora é gerenciado via JS (tamanho/densidade dinâmicos)
+   As regras abaixo estilizam os elementos que `src/javascript/fatto-bg.js`
+   insere no DOM para produzir o padrão repetido "FATTO". Mantemos
+   pointer-events:none e z-index baixo para não interferir no conteúdo.
 */
-body::before {
-    content: "";
+.fatto-bg {
     position: fixed;
     top: 0;
-    left: 0;
     right: 0;
     bottom: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch; /* linhas ocupam toda a largura */
+    justify-content: space-between;
+    gap: 0;
+    padding: 0; /* remove margens internas para colar nas bordas */
     pointer-events: none;
     z-index: 0;
-    /* SVG pattern: 'FATTO' centralizado no tile, cor tema (#b71c1c) com baixa opacidade */
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='520' height='160'><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='Montserrat,Segoe UI,Arial' font-weight='900' font-size='96' fill='%23b71c1c' fill-opacity='0.12'>FATTO</text></svg>");
-    background-repeat: repeat;
-    background-position: center;
-    background-size: 520px 160px; /* tamanho do tile — ajusta densidade */
+    overflow: hidden;
+    font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
+}
+.fatto-bg__row {
+    display: flex;
+    gap: 0; /* sem espaçamento lateral para não criar bordas */
+    width: 100%;
+    justify-content: space-between; /* distribui palavras até as extremidades */
+    align-items: center;
+}
+.fatto-bg__word {
+    color: #b71c1c;
+    opacity: 0.08;
+    font-weight: 900;
+    font-size: 96px;
+    line-height: 1;
+    white-space: nowrap;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+    transform-origin: center;
 }
 
 /* Barrinha minimalista abaixo do título principal (#to_do h1) */
@@ -127,33 +149,6 @@ body::before {
 
 /* Header row: place title left and logo at the opposite corner (right)
    on small screens logo moves below the title */
-.header-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 12px;
-    width: 100%; /* ensure full width so space-between works */
-    flex-wrap: nowrap; /* prevent logo stacking */
-}
-.header-logo {
-    max-width: 120px;
-    max-height: 56px;
-    height: auto;
-    object-fit: contain;
-    display: block;
-    margin-left: 12px;
-    align-self: center;
-}
-
-@media (max-width: 480px) {
-    /* keep elements on one line but scale the logo down on very small screens */
-    .header-logo {
-        max-width: 72px;
-        max-height: 40px;
-    }
-}
-
 #to_do h1::after {
     content: '';
     display: block;
@@ -326,14 +321,7 @@ button[type="submit"]:hover {
     font-weight: 600;
 }
 
-.task-details {
-    color: #444;
-    font-size: 15px;
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    gap: 12px;
-}
+/* .task-details was removed: layout uses .task-details-col in JS-generated markup */
 
 .task-details-col {
     display: flex;
@@ -482,55 +470,7 @@ button[type="submit"]:hover {
     color: #b71c1c;
 }
 
-#footer-box {
-    width: 100%;
-    max-width: 600px;
-    margin: 12px auto 0 auto;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(183, 28, 28, 0.08);
-    border: 1.2px solid #b71c1c;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 28px;
-    position: relative;
-    z-index: 2;
-    font-size: 1.08rem;
-}
-
-.footer-left {
-    color: #b71c1c;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
-
-.footer-center {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #b71c1c;
-    opacity: 0.25;
-    font-size: 1.1rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-    pointer-events: none;
-}
-
-.footer-right {
-    display: flex;
-    gap: 18px;
-}
-
-.footer-right i {
-    color: #b71c1c;
-    font-size: 1.3rem;
-    cursor: pointer;
-    transition: color 0.2s;
-}
-
-.footer-right i:hover {
-    color: #d32f2f;
-}
+/* Legacy footer-box/footer-left/footer-center/footer-right were removed because
+    current HTML uses #footer-flutuante, .footer-content, .footer-nome and .footer-icons */
 
 /* background FATTO agora é gerenciado via JS (tamanho/densidade dinâmicos) */

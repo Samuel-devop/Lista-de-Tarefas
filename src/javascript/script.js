@@ -25,8 +25,9 @@ $(document).ready(function() {
     }
 
     // Função para carregar tarefas do banco
-    function loadTasks() {
-        showLoadingSpinner();
+    // showSpinner: quando false evita mostrar a animação de loading (útil durante reordenação)
+    function loadTasks(showSpinner = true) {
+        if (showSpinner) showLoadingSpinner();
         $.get('src/php/listar_tarefas.php', function(data) {
             let tarefas = [];
             try {
@@ -35,6 +36,9 @@ $(document).ready(function() {
                 tarefas = [];
             }
             hideLoadingSpinner();
+            // Clear container first to avoid duplicating items when loadTasks
+            // is called multiple times (sometimes with showSpinner=false).
+            $('#tasksContainer').empty();
             if (!tarefas.length) {
                 $('#tasksContainer').html(`
                     <div id="emptyState" class="empty-state">
@@ -153,6 +157,13 @@ $(document).ready(function() {
 
     // --- Drag & drop swapping with animation ---
     let dragSrcEl = null;
+    // Auto-scroll while dragging when cursor is near top/bottom of the container
+    let _autoScrollRaf = null;
+    let _autoScrollDir = 0; // -1 up, 0 none, 1 down
+    let _autoScrollSpeed = 0; // px per frame
+    const AUTO_SCROLL_EDGE = 140; // px from edge to start accelerating (aumentado para iniciar autoscroll mais cedo)
+    const AUTO_SCROLL_MAX_SPEED = 28; // max px per frame (smooth)
+    const AUTO_SCROLL_MIN_SPEED = 6; // mínimo perceptível de px por frame para iniciar movimento rápido
 
     // Helper: animate swap between two jQuery elements, returns a Promise
     function animateSwap($a, $b) {
@@ -189,8 +200,6 @@ $(document).ready(function() {
                 } else if ($bNext && $bNext[0] === $a[0]) {
                     $a.insertBefore($b);
                 } else {
-                    const aParent = $a.parent();
-                    const bParent = $b.parent();
                     const aIndex = $a.index();
                     const bIndex = $b.index();
                     if (aIndex < bIndex) {
@@ -223,6 +232,9 @@ $(document).ready(function() {
         $(this).removeClass('dragging');
         dragSrcEl = null;
         $('.task-item').removeClass('drag-over');
+        // stop any auto-scroll activity
+        if (_autoScrollRaf) { cancelAnimationFrame(_autoScrollRaf); _autoScrollRaf = null; }
+        _autoScrollDir = 0; _autoScrollSpeed = 0;
     });
 
     // Enable dragging only when handle is pressed
@@ -235,9 +247,51 @@ $(document).ready(function() {
         $('.task-item[draggable="true"]').attr('draggable', 'false');
     });
 
-    $('#tasksContainer').on('dragover', '.task-item', function(e) {
+    // Dragover on container: handle highlighting and smooth auto-scroll
+    $('#tasksContainer').on('dragover', function(e) {
         e.preventDefault();
-        $(this).addClass('drag-over');
+        const $container = $(this);
+        const containerEl = $container[0];
+        const rect = containerEl.getBoundingClientRect();
+    const clientY = e.originalEvent.clientY;
+
+        // highlight the nearest task-item under cursor
+        const $under = $(e.target).closest('.task-item');
+        $('.task-item').removeClass('drag-over');
+        if ($under.length) $under.addClass('drag-over');
+
+        // compute distance to edges and desired speed
+        const distToBottom = rect.bottom - clientY;
+        const distToTop = clientY - rect.top;
+        let dir = 0;
+        let ratio = 0;
+        if (distToBottom < AUTO_SCROLL_EDGE) {
+            dir = 1;
+            ratio = (AUTO_SCROLL_EDGE - Math.max(0, distToBottom)) / AUTO_SCROLL_EDGE;
+        } else if (distToTop < AUTO_SCROLL_EDGE) {
+            dir = -1;
+            ratio = (AUTO_SCROLL_EDGE - Math.max(0, distToTop)) / AUTO_SCROLL_EDGE;
+        }
+
+    _autoScrollDir = dir;
+    // Use sqrt curve so speed ramps up earlier (more responsive near the edge)
+    const eased = Math.sqrt(Math.max(0, ratio));
+    _autoScrollSpeed = Math.max(AUTO_SCROLL_MIN_SPEED, Math.min(AUTO_SCROLL_MAX_SPEED, eased * AUTO_SCROLL_MAX_SPEED));
+
+        // start RAF loop if needed
+        if (!_autoScrollRaf && _autoScrollDir !== 0) {
+            const step = () => {
+                if (!_autoScrollDir) { _autoScrollRaf = null; return; }
+                // scroll container if it can, otherwise window
+                if (containerEl.scrollHeight > containerEl.clientHeight) {
+                    containerEl.scrollTop += _autoScrollDir * _autoScrollSpeed;
+                } else {
+                    window.scrollBy(0, _autoScrollDir * _autoScrollSpeed);
+                }
+                _autoScrollRaf = requestAnimationFrame(step);
+            };
+            _autoScrollRaf = requestAnimationFrame(step);
+        }
     });
     $('#tasksContainer').on('dragleave', '.task-item', function() { $(this).removeClass('drag-over'); });
 
@@ -255,18 +309,18 @@ $(document).ready(function() {
 
         // Animate swap, then persist order on server
         animateSwap(dragSrcEl, $target).then(() => {
-            // Send reorder request to server
-            $.post('src/php/reordenar_tarefa.php', {
+                // Send reorder request to server
+                $.post('src/php/reordenar_tarefa.php', {
                 id: idSrc,
                 ordem: ordemSrc,
                 id_alvo: idTarget,
                 ordem_alvo: ordemTarget
             }, function(response) {
                 // reload tasks to ensure DB state matches UI
-                loadTasks();
+                    loadTasks(false);
             }).fail(function() {
                 // On failure, reload to revert local change
-                loadTasks();
+                    loadTasks(false);
             });
         });
     });
@@ -353,23 +407,7 @@ $(document).ready(function() {
         });
     }
 
-    // Delegação de evento para o botão de excluir
-    $('#tasksContainer').on('click', '.delete-btn', function() {
-        const taskItem = $(this).closest('.task-item');
-        const id = taskItem.data('id');
-        showConfirmPopup('Tem certeza que deseja excluir esta tarefa?', function() {
-            $.post('src/php/excluir_tarefa.php', { id: id }, function(response) {
-                let res;
-                try { res = JSON.parse(response); } catch (e) { res = {}; }
-                if (res.success) {
-                    showPopup(res.message || 'Tarefa excluída com sucesso!', true);
-                    loadTasks();
-                } else {
-                    showPopup(res.message || 'Erro ao excluir tarefa.');
-                }
-            });
-        });
-    });
+    
 
     // Pop-up de confirmação para exclusão
     function showConfirmPopup(message, onConfirm) {
@@ -396,6 +434,24 @@ $(document).ready(function() {
         });
     }
 
+    // Delegação de evento para o botão de excluir
+    $('#tasksContainer').on('click', '.delete-btn', function() {
+        const taskItem = $(this).closest('.task-item');
+        const id = taskItem.data('id');
+        showConfirmPopup('Tem certeza que deseja excluir esta tarefa?', function() {
+            $.post('src/php/excluir_tarefa.php', { id: id }, function(response) {
+                let res;
+                try { res = JSON.parse(response); } catch (e) { res = {}; }
+                if (res.success) {
+                    showPopup(res.message || 'Tarefa excluída com sucesso!', true);
+                    loadTasks();
+                } else {
+                    showPopup(res.message || 'Erro ao excluir tarefa.');
+                }
+            });
+        });
+    });
+
     // Delegação de evento para o botão de editar
     $('#tasksContainer').on('click', '.edit-btn', function() {
         const taskItem = $(this).closest('.task-item');
@@ -407,7 +463,6 @@ $(document).ready(function() {
     let date = taskItem.attr('data-date') || taskItem.find('.task-date span').text();
         // Cria campos editáveis
     taskItem.find('h3').replaceWith(`<input type='text' class='edit-name' value='${name}' style='margin-bottom:8px; width:90%; font-size:1.1rem; font-weight:600; color:#b71c1c; border:1px solid #b71c1c; border-radius:6px; padding:4px 10px;'>`);
-    const today = new Date().toISOString().split('T')[0];
     // Normalize date to YYYY-MM-DD for the date input
     let inputDateVal = '';
     if (/^\d{4}-\d{2}-\d{2}/.test(date)) {
@@ -479,7 +534,7 @@ $(document).ready(function() {
             id_alvo: prevId,
             ordem_alvo: prevOrdem
         }, function(response) {
-            loadTasks();
+            loadTasks(false);
         });
     });
     $('#tasksContainer').on('click', '.move-down', function() {
@@ -496,7 +551,7 @@ $(document).ready(function() {
             id_alvo: nextId,
             ordem_alvo: nextOrdem
         }, function(response) {
-            loadTasks();
+            loadTasks(false);
         });
     });
 
