@@ -45,15 +45,17 @@ $(document).ready(function() {
                 const formattedDate = new Date(tarefa.data_limite).toLocaleDateString('pt-BR');
                 const priceValue = parseFloat(tarefa.custo);
                 const formattedPrice = priceValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                addTaskItem(tarefa.id, tarefa.nome, formattedPrice, formattedDate, priceValue >= 1000);
+                addTaskItem(tarefa.id, tarefa.nome, formattedPrice, formattedDate, priceValue >= 1000, tarefa.concluida);
             });
         });
     }
 
     // Adiciona tarefa na tela
     function addTaskItem(id, taskName, formattedPrice, formattedDate, isHighCost = false) {
-        const taskItem = $('<div>').addClass('task-item').attr('data-id', id);
-        if (isHighCost) taskItem.addClass('high-cost');
+    const taskItem = $('<div>').addClass('task-item').attr('data-id', id);
+    if (isHighCost) taskItem.addClass('high-cost');
+    // Adiciona classe completed se estiver concluída
+    if (arguments.length > 5 && arguments[5]) taskItem.addClass('completed');
         taskItem.html(`
             <div class="task-main-row" style="display:flex; align-items:flex-start; gap:12px;">
                 <div style="flex:1;">
@@ -79,16 +81,33 @@ $(document).ready(function() {
             </div>
         `);
         $('#tasksContainer').append(taskItem);
-    // Delegação de evento para o botão de concluir (apenas visual)
-    $('#tasksContainer').on('click', '.complete-btn', function() {
+    // Delegação de evento para o botão de concluir (agora integrado ao backend)
+    $('#tasksContainer').off('click', '.complete-btn').on('click', '.complete-btn', function() {
         const taskItem = $(this).closest('.task-item');
-        if (taskItem.hasClass('completed')) {
-            taskItem.removeClass('completed');
-            showPopup('Tarefa marcada como pendente!', true);
-        } else {
-            taskItem.addClass('completed');
-            showPopup('Tarefa marcada como concluída!', true);
-        }
+        const id = taskItem.data('id');
+        $.ajax({
+            url: 'src/php/concluir_tarefa.php',
+            type: 'POST',
+            data: { id: id },
+            success: function(response) {
+                let res;
+                try { res = JSON.parse(response); } catch (e) { res = {}; }
+                if (res.success) {
+                    // Atualiza visual conforme status retornado
+                    if (res.message && res.message.includes('concluída')) {
+                        taskItem.addClass('completed');
+                    } else {
+                        taskItem.removeClass('completed');
+                    }
+                    showPopup(res.message, true);
+                } else {
+                    showPopup(res.message || 'Erro ao atualizar status da tarefa.');
+                }
+            },
+            error: function(xhr) {
+                showPopup('Erro ao conectar ao servidor.');
+            }
+        });
     });
     }
 
