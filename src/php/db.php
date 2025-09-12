@@ -1,9 +1,9 @@
 <?php
-$host = 'localhost'; // ou o IP do seu servidor PostgreSQL
-$port = '5432'; // porta padrão do PostgreSQL
-$dbname = 'listadetarefas';
+$host = 'containers-us-west-158.railway.app'; // ou o IP do seu servidor PostgreSQL
+$port = '7999'; // porta padrão do PostgreSQL
+$dbname = 'railway';
 $user = 'postgres';
-$password = '1234';
+$password = 'VzcZvQOaRqfFCMmnQVhAToRSlxthwaMv';
 
 $conn = pg_connect("host=$host port=$port dbname=$dbname user=$user password=$password");
 if (!$conn) {
