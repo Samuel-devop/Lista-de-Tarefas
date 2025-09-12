@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y \
 
 # Copia todos os arquivos do projeto para o Apache (inclusive index.html, styles, js, etc)
 COPY ./src/php /var/www/html/php
-COPY ./src/assets /var/www/html/assets
+# COPY ./src/assets /var/www/html/assets   # REMOVIDO, pois a pasta está vazia ou não existe
 COPY ./src/javascript /var/www/html/javascript
 COPY ./src/styles /var/www/html/styles
 COPY ./index.html /var/www/html/index.html
