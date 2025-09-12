@@ -1,12 +1,13 @@
 FROM php:8.2-apache
 
-# Instala dependências e extensões PostgreSQL necessárias (pdo_pgsql e pgsql)
+# Instala dependências do sistema e PostgreSQL PHP extensions
 RUN apt-get update && apt-get install -y libpq-dev \
-    && docker-php-ext-install pdo pdo_pgsql pgsql
+    && docker-php-ext-install pdo pdo_pgsql pgsql \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copia todos os arquivos do projeto para o Apache
-COPY ./php /var/www/html/php
-COPY ./javascript /var/www/html/javascript
+# Copia arquivos do projeto para o Apache
+COPY ./src/php /var/www/html/php
+COPY ./src/javascript /var/www/html/javascript
 COPY ./styles /var/www/html/styles
 COPY ./index.html /var/www/html/index.html
 
