@@ -1,6 +1,6 @@
 FROM php:8.2-apache
 
-# Postgres (libpq) + extensões PHP (necessário para pg_connect e PDO)
+# Postgres (libpq) + extensões PHP (necessárias para pg_connect e PDO)
 RUN apt-get update && apt-get install -y libpq-dev \
   && docker-php-ext-install pgsql pdo pdo_pgsql
 
