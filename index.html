@@ -1,63 +1,57 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles/style.css">
-    <script src="javascript/fatto-bg.js"></script>
-    <script src="javascript/script.js"></script>
-    <title>Lista de Tarefas</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/src/styles/style.css" />
+
+  <!-- jQuery primeiro -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
+
+  <!-- Seus scripts (uma vez só) -->
+  <script src="/src/javascript/fatto-bg.js" defer></script>
+  <script src="/src/javascript/script.js" defer></script>
+
+  <title>Lista de Tarefas</title>
 </head>
-
 <body>
-    
-    <div id="to_do">
-        <h1>Lista de Tarefas</h1>
+  <div id="to_do">
+    <h1>Lista de Tarefas</h1>
+    <button id="toggleForm"><i class="fas fa-plus"></i> Adicionar Nova Tarefa</button>
 
-        <button id="toggleForm"><i class="fas fa-plus"></i> Adicionar Nova Tarefa</button>
+    <form id="expandedForm" class="to-do-form" style="display:none;">
+      <div class="form-group">
+        <label for="taskName">Nome da Tarefa</label>
+        <input type="text" id="taskName" placeholder="Digite sua tarefa aqui" required />
+      </div>
+      <div class="form-group">
+        <label for="taskPrice">Preço (R$)</label>
+        <input type="number" id="taskPrice" placeholder="0,00" step="0.01" min="0" />
+      </div>
+      <div class="form-group">
+        <label for="taskDate">Data</label>
+        <input type="date" id="taskDate" required />
+      </div>
+      <button type="submit"><i class="fas fa-plus-circle"></i> Adicionar Tarefa</button>
+    </form>
 
-        <form id="expandedForm" class="to-do-form" style="display: none;">
-            <div class="form-group">
-                <label for="taskName">Nome da Tarefa</label>
-                <input type="text" id="taskName" placeholder="Digite sua tarefa aqui" required>
-            </div>
+    <div id="tasksContainer"></div>
+  </div>
 
-            <div class="form-group">
-                <label for="taskPrice">Preço (R$)</label>
-                <input type="number" id="taskPrice" placeholder="0,00" step="0.01" min="0">
-            </div>
-
-            <div class="form-group">
-                <label for="taskDate">Data</label>
-                <input type="date" id="taskDate" required>
-            </div>
-
-            <button type="submit"><i class="fas fa-plus-circle"></i> Adicionar Tarefa</button>
-        </form>
-
-        <div id="tasksContainer"></div>
+  <footer id="footer-flutuante">
+    <div class="footer-content">
+      <span class="footer-nome">Samuel Ramos</span>
+      <span class="footer-icons">
+        <a href="https://mail.google.com/mail/u/1/#inbox?compose=GTvVlcSHxjfspClhDfHgWlWPgjdFCTNGDGxNXPBcstkTMlhHgPkQZksZDnFQrcwbwqsWfCMHHJcXt" target="_blank" rel="noopener" title="Enviar Email">
+          <i class="fa-solid fa-envelope"></i>
+        </a>
+        <a href="https://github.com/Samuel-devop" target="_blank" rel="noopener" class="footer-link-github">
+          <i class="fa-brands fa-github"></i>
+        </a>
+      </span>
     </div>
-
-    <!-- Adicionar jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="src/javascript/fatto-bg.js"></script>
-    <script src="src/javascript/script.js"></script>
-    
-
-    <footer id="footer-flutuante">
-        <div class="footer-content">
-            <span class="footer-nome">Samuel Ramos</span>
-            <span class="footer-icons">
-                <a href="https://mail.google.com/mail/u/1/#inbox?compose=GTvVlcSHxjfspClhDfHgWlWPgjdFCTNGDGxNXPBcstkTMlhHgPkQZksZDnFQrcwbwqsWfCMHHJcXt" target="_blank" rel="noopener" title="Enviar Email">
-                    <i class="fa-solid fa-envelope"></i>
-                </a>
-                <a href="https://github.com/Samuel-devop" target="_blank" rel="noopener" class="footer-link-github">
-                    <i class="fa-brands fa-github"></i>
-                </a>
-            </span>
-        </div>
-    </footer>
+  </footer>
 </body>
-
 </html>

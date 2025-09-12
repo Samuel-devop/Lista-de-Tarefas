@@ -1,19 +1,18 @@
 FROM php:8.2-apache
 
-# Atualiza e instala dependências para PostgreSQL
+# Postgres (libpq) + extensões PHP (necessário para pg_connect e PDO)
 RUN apt-get update && apt-get install -y libpq-dev \
-    && docker-php-ext-install pdo pdo_pgsql
+  && docker-php-ext-install pgsql pdo pdo_pgsql
 
-# Copia o código PHP para o servidor
-COPY ./src/php /var/www/html/php
+# (opcional) habilitar rewrites se um dia usar .htaccess
+# RUN a2enmod rewrite
 
-# Copia arquivos estáticos
-COPY ./src/javascript /var/www/html/javascript
-COPY ./src/styles /var/www/html/styles
+# Copia sua árvore mantendo /src no docroot
+COPY ./src /var/www/html/src
 COPY ./index.html /var/www/html/index.html
 
-# Ajusta permissões
+# Permissões
 RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
+  && chmod -R 755 /var/www/html
 
 EXPOSE 80
